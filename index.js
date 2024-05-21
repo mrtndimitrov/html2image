@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const pkg = require('./package.json');
 const puppeteer = require('puppeteer');
 const signale = require('signale');
@@ -10,18 +12,24 @@ const args = require('args-parser')(process.argv);
     signale.start(`html2image v${pkg.version}`);
 
     if (!args.url) {
-      return signale.error('No url arg provided')
+      return signale.error('No url arg provided');
     }
     if (!args.dest) {
-      return signale.error('No dest arg provided')
+      return signale.error('No dest arg provided');
+    }
+    if (!args.width) {
+      args.width = 800;
+    }
+    if (!args.width) {
+      args.height = 600;
     }
     spinner = ora('Starting puoppeteer browser').start();
     const browser = await puppeteer.launch({
       headless: true,
       slowMo: 300,
       defaultViewport: {
-        width: 1026,
-        height: 752,
+        width: args.width,
+        height: args.height
       }
     });
     const page = await browser.newPage();

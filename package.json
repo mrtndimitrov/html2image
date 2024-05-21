@@ -1,17 +1,21 @@
 {
-  "name": "html2image",
-  "version": "1.0.0",
-  "description": "",
+  "name": "node-html-2-image",
+  "version": "1.0.1",
+  "description": "Usage: html2image --url=https://wwww.google.com --dest=/google.jpg",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "bin": {
+    "html2image": "./index.js"
+  },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "preferGlobal": true,
+  "author": "Martin Koroudjiev",
+  "license": "MIT",
   "dependencies": {
     "args-parser": "^1.3.0",
-    "ora": "^5.4.1",
+    "ora": "^5.4.1npm login",
     "puppeteer": "^22.9.0",
     "signale": "^1.4.0"
   }
