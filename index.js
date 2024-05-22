@@ -29,7 +29,7 @@ const fs = require('fs');
 
     spinner = ora('Starting puoppeteer browser').start();
     const browser = await puppeteer.launch({
-      headless: true,
+      headless: false,
       slowMo: 300,
       defaultViewport: {
         width: args.width,
@@ -39,6 +39,17 @@ const fs = require('fs');
     const page = await browser.newPage();
     if (args['cookie-name']) {
       await page.setCookie({name: args['cookie-name'], value: args['cookie-value'], domain: args['cookie-domain']});
+    }
+    if (!args.debug) {
+      page.on('console', message => {
+        signale.debug(`${message.type().substr(0, 3).toUpperCase()}: ${message.text()}`);
+      }).on('pageerror', ({ message }) => {
+        signale.debug(`PAGEERROR: ${message}`);
+      }).on('response', response => {
+        signale.debug(`RESPONSE ${response.status()}: ${response.url()}`);
+      }).on('requestfailed', request => {
+        signale.debug(`REQUESTFAILED ${request.failure().errorText}: ${request.url()}`);
+      });
     }
     spinner.succeed();
     spinner = ora('Loading page').start();
