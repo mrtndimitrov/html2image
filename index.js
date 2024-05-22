@@ -40,7 +40,7 @@ const fs = require('fs');
     if (args['cookie-name']) {
       await page.setCookie({name: args['cookie-name'], value: args['cookie-value'], domain: args['cookie-domain']});
     }
-    if (!args.debug) {
+    if (args.debug) {
       page.on('console', message => {
         signale.debug(`${message.type().substr(0, 3).toUpperCase()}: ${message.text()}`);
       }).on('pageerror', ({ message }) => {
