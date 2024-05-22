@@ -29,7 +29,7 @@ const fs = require('fs');
 
     spinner = ora('Starting puoppeteer browser').start();
     const browser = await puppeteer.launch({
-      headless: false,
+      headless: true,
       slowMo: 300,
       defaultViewport: {
         width: args.width,
