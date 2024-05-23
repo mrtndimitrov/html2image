@@ -43,12 +43,6 @@ const fs = require('fs');
     if (args.debug) {
       page.on('console', message => {
         signale.debug(`${message.type().substr(0, 3).toUpperCase()}: ${message.text()}`);
-      }).on('pageerror', ({ message }) => {
-        signale.debug(`PAGEERROR: ${message}`);
-      }).on('response', response => {
-        signale.debug(`RESPONSE ${response.status()}: ${response.url()}`);
-      }).on('requestfailed', request => {
-        signale.debug(`REQUESTFAILED ${request.failure().errorText}: ${request.url()}`);
       });
     }
     spinner.succeed();
@@ -63,14 +57,8 @@ const fs = require('fs');
       let filename = 'index.html';
       if(fs.lstatSync(args.src).isDirectory()) {
         app.use(express.static(args.src));
-        if (args.basedir) {
-          app.use(`/${args.basedir}`, express.static(args.src));
-        }
       } else {
         app.use(express.static(path.dirname(args.src)));
-        if (args.basedir) {
-          app.use(`/${args.basedir}`, express.static(path.dirname(args.src)));
-        }
         filename = path.basename(args.src);
       }
       app.listen(args.port, async () => {
