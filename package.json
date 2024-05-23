@@ -1,6 +1,6 @@
 {
   "name": "node-html-2-image",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A node.js command line utility that generates images from html provided as URL or local file",
   "main": "index.js",
   "scripts": {

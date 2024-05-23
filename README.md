@@ -22,6 +22,8 @@ Generate an image from local file but run it in a local server (many times local
 html2image --src=my-site.html --local-server --dest=my-site.jpg --type=jpeg
 ```
 
+**NOTE**: The shell commands must not be run under `root`. Chromium doesn't allow it.
+
 ## Options
 List of all available options:
 
@@ -41,3 +43,5 @@ List of all available options:
 | `local-server` | Whether to load the `src` html in a local server                               | boolean                   | false   | optional                   |
 | `port`         | The port for the local server                                                  | number                    | 3000    | optional                   |
 | `debug`        | Whether to print debug information from the loaded page to the stdout          | number                    | 600     | optional                   |
+
+**NOTE**: `src` can be pointing to directory or file. If it is a directory, then there must be `index.html` file inside of it.
