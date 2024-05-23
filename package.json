@@ -1,7 +1,7 @@
 {
   "name": "node-html-2-image",
   "version": "1.0.2",
-  "description": "Usage: html2image --url=https://wwww.google.com --dest=/google.jpg",
+  "description": "A node.js command line utility that generates images from html provided as URL or local file",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,7 +9,7 @@
   "bin": {
     "html2image": "./index.js"
   },
-  "keywords": [],
+  "keywords": ["html", "image", "puppeteer", "html2image", "html2jpeg", "html2jpg", "html2png"],
   "preferGlobal": true,
   "author": "Martin Koroudjiev",
   "license": "MIT",

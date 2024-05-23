@@ -1,90 +1,121 @@
 #!/usr/bin/env node
 
+const path = require('node:path');
+const fs = require('node:fs');
+const urlParser = require('node:url');
+
 const pkg = require('./package.json');
+
 const puppeteer = require('puppeteer');
 const signale = require('signale');
 const ora = require('ora');
-const args = require('args-parser')(process.argv);
+const argsParser = require('args-parser');
 const express = require('express');
-const path = require('path');
-const fs = require('fs');
 
 (async () => {
   let spinner;
   try {
     signale.start(`html2image v${pkg.version}`);
 
-    if (!args.url && !args.src) {
+    const args = argsParser(process.argv);
+    const options = {
+      ...{
+        url: null,
+        src: null,
+        dest: null,
+        type: 'png',
+        quality: 80,
+        width: 800,
+        height: 600,
+        'slow-motion': 0,
+        delay: 1000,
+        'cookie-name': null,
+        'cookie-value': null,
+        'local-server': false,
+        port: 3000,
+        debug: false,
+      },
+      ...args
+    };
+
+    if (!options.url && !options.src) {
       return signale.error('No url or src arg provided');
     }
-    if (!args.dest) {
+    if (!options.dest) {
       return signale.error('No dest arg provided');
-    }
-    if (!args.width) {
-      args.width = 800;
-    }
-    if (!args.width) {
-      args.height = 600;
     }
 
     spinner = ora('Starting puoppeteer browser').start();
     const browser = await puppeteer.launch({
       headless: true,
-      slowMo: 300,
+      slowMo: options['slow-motion'],
       defaultViewport: {
-        width: args.width,
-        height: args.height
+        width: options.width,
+        height: options.height
       }
     });
     const page = await browser.newPage();
-    if (args['cookie-name']) {
-      await page.setCookie({name: args['cookie-name'], value: args['cookie-value'], domain: args['cookie-domain']});
-    }
-    if (args.debug) {
+
+    if (options.debug) {
       page.on('console', message => {
-        signale.debug(`${message.type().substr(0, 3).toUpperCase()}: ${message.text()}`);
+        signale.debug(`${message.type().toUpperCase()}: ${message.text()}`);
+      }).on('pageerror', ({message}) => {
+        signale.debug(`PAGEERROR: ${message}`);
+      }).on('response', response => {
+        signale.debug(`RESPONSE ${response.status()}: ${response.url()}`);
+      }).on('requestfailed', request => {
+        signale.debug(`REQUEST FAILED ${request.failure() ? request.failure().errorText : ''}: ${request.url()}`)
       });
     }
     spinner.succeed();
     spinner = ora('Loading page').start();
-    if (args.url) {
-      await page.goto(args.url, {waitUntil: 'domcontentloaded'});
-    } else if (args['local-server']) {
-      if (!args.port) {
-        args.port = 3000;
+    if (options.url) {
+      if (options['cookie-name'] && options['cookie-value']) {
+        const url = urlParser.parse(options.url);
+        await page.setCookie({name: options['cookie-name'], value: options['cookie-value'], domain: url.hostname});
       }
+      await page.goto(options.url, {waitUntil: 'domcontentloaded'});
+    } else if (options['local-server']) {
       const app = express();
       let filename = 'index.html';
-      if(fs.lstatSync(args.src).isDirectory()) {
-        app.use(express.static(args.src));
+      if(fs.lstatSync(options.src).isDirectory()) {
+        app.use(express.static(options.src));
       } else {
-        app.use(express.static(path.dirname(args.src)));
-        filename = path.basename(args.src);
+        app.use(express.static(path.dirname(options.src)));
+        filename = path.basename(options.src);
       }
-      app.listen(args.port, async () => {
-        await page.goto(`http://localhost:${args.port}/${filename}`, {waitUntil: 'domcontentloaded'});
+      if (options['cookie-name'] && options['cookie-value']) {
+        await page.setCookie({name: options['cookie-name'], value: options['cookie-value'], domain: 'localhost'});
+      }
+      app.listen(options.port, async () => {
+        await page.goto(`http://localhost:${options.port}/${filename}`, {waitUntil: 'domcontentloaded'});
       });
     } else {
-      await page.goto(`file://${args.src}`, {waitUntil: 'domcontentloaded'});
+      await page.goto(`file://${options.src}`, {waitUntil: 'domcontentloaded'});
     }
     await page.waitForSelector('body');
     spinner.succeed();
     spinner = ora('Taking screenshot').start();
-    await sleep(3000);
-    await page.screenshot({
-      type: 'jpeg',
-      path: args.dest,
+    await sleep(options.delay);
+    const screenshotOption = {
+      type: options.type,
+      path: options.dest,
       fullPage: false,
-    });
-    //await browser.close();
+    };
+    if (options.type === 'jpeg') {
+      screenshotOption.quality = options.quality;
+    }
+    await page.screenshot(screenshotOption);
+    await browser.close();
     spinner.succeed();
+    process.exit(0);
   } catch (err) {
     if (spinner) {
       spinner.stop();
     }
     signale.error(err);
+    process.exit(1);
   }
-  process.exit();
 })();
 
 function sleep(ms) {
